@@ -4,22 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestione Ore di Lavoro - Mainetti Solution</title>
-    <link rel="manifest" href="manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js').catch(err => console.error('SW registration failed', err));
-        }
-    </script>
     <style>
+        /* Importare un font che simula Schillerplatz Std Regular */
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+        
         :root {
             --main-color: #e30613;
             --secondary-color: #333;
             --light-gray: #f4f4f4;
             --border-color: #ddd;
         }
+        
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
@@ -27,32 +24,276 @@
             background-color: #f9f9f9;
             color: var(--secondary-color);
         }
+        
         .container {
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
+        
         header {
             background-color: white;
             padding: 20px 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
+        
         .header-content {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
-        .company-logo {
-            max-height: 100px;
+        
+        .company-title {
+            font-family: 'Playfair Display', serif; /* Font simile a Schillerplatz Std Regular */
+            font-size: 40px;
+            color: var(--main-color);
+            text-align: center;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
+        
         .company-address {
             text-align: center;
-            margin-top: 10px;
+            margin-top: 5px;
             font-size: 14px;
         }
-    </style>
+        
+        .logo-text {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .logo-text span.big-letter {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .form-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .form-col {
+            flex: 1;
+            padding: 0 10px;
+            min-width: 250px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #c40000;
+        }
+        
+        .timesheet-title {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .timesheet-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            border-bottom: 2px solid var(--main-color);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+        }
+        
+        .materials-row {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .materials-row input:first-child {
+            flex: 2;
+            margin-right: 10px;
+        }
+        
+        .materials-row input[type="number"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .materials-row select {
+            width: 120px;
+        }
+        
+        .add-row-btn {
+            background-color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .add-row-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .firme {
+            margin-top: 100px; /* Spazio aumentato a 100px */
+            padding-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table, th, td {
+            border: 1px solid var(--border-color);
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--light-gray);
+        }
+        
+        .time-entry {
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Modal per istruzioni email */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-title {
+            color: var(--main-color);
+            margin-top: 0;
+        }
+        
+        .close-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin-right: 10px;
+        }
+        
+        .proceed-btn {
+            background-color: #4CAF50;
+        }
+        
+        .modal-actions {
+            text-align: right;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-col {
+                flex: 100%;
+                margin-bottom: 15px;
+            }
+            
+            .materials-row {
+                flex-direction: column;
+            }
+            
+            .materials-row input, .materials-row select {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+    
+.company-logo {
+    max-height: 100px;
+}
+</style>
+
 </head>
 <body>
     <header>
@@ -61,9 +302,338 @@
             <p class="company-address">Via Cantonale 90, 6705 Cresciano</p>
         </div>
     </header>
+    
     <div class="container">
-        <!-- Il resto del contenuto del form originale va qui -->
-        <p>Contenuto del bollettario...</p>
+        <div class="form-container" id="timesheetForm">
+            <h2 class="timesheet-title">Registrazione Ore di Lavoro</h2>
+            
+            <div class="timesheet-section">
+                <h3 class="section-title">Informazioni Generali</h3>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="lavoroRegia" name="lavoroRegia">
+                    <label for="lavoroRegia">Lavoro a Regia</label>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="collaboratore">Nome Collaboratore:</label>
+                            <input type="text" id="collaboratore" name="collaboratore" required>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label for="data">Data:</label>
+                            <input type="date" id="data" name="data" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cliente">Nome Cliente:</label>
+                    <input type="text" id="cliente" name="cliente" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="indirizzo">Indirizzo Cliente:</label>
+                    <input type="text" id="indirizzo" name="indirizzo" required>
+                </div>
+            </div>
+            
+            <div class="timesheet-section">
+                <h3 class="section-title">Ore di Lavoro</h3>
+                <table id="timeTable">
+                    <thead>
+                        <tr>
+                            <th>Attività</th>
+                            <th>Ora Inizio</th>
+                            <th>Ora Fine</th>
+                            <th>Ore Totali</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" name="Attività[]" required></td>
+                            <td><input type="time" name="oraInizio[]" onchange="calcolaOre(this)" required></td>
+                            <td><input type="time" name="oraFine[]" onchange="calcolaOre(this)" required></td>
+                            <td><input type="text" name="oreTotali[]" readonly></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="add-row-btn" onclick="aggiungiRigaOre()">Aggiungi Riga</button>
+            </div>
+            
+            <div class="timesheet-section">
+                <h3 class="section-title">Materiali Utilizzati</h3>
+                <div id="materialsContainer">
+                    <div class="materials-row">
+                        <input type="text" placeholder="Descrizione materiale" name="materiale[]">
+                        <input type="number" placeholder="Quantità" name="quantita[]" min="0">
+                        <select name="unita[]">
+                            <option value="pezzi">Pezzi</option>
+                            <option value="metri">Metri</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="add-row-btn" onclick="aggiungiRigaMateriali()">Aggiungi Materiale</button>
+            </div>
+            
+            <div class="timesheet-section">
+                <h3 class="section-title">Annotazioni</h3>
+                <div class="form-group">
+                    <textarea id="note" name="note" rows="4" placeholder="Inserisci qui eventuali note o annotazioni..."></textarea>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="button" onclick="generaPDF()">Genera PDF</button>
+                <button type="button" onclick="generaPDFeInviaEmail()">PDF e invia via email</button>
+                <button type="button" onclick="resetForm()">Reset</button>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+    
+    <!-- Modal di istruzioni per l'email -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title">Istruzioni per l'invio dell'email</h3>
+            <p>Il PDF è stato generato correttamente.</p>
+            <p><strong>Per inviare l'email:</strong></p>
+            <ol>
+                <li>Quando si aprirà il client email, <strong>ricordati di allegare manualmente</strong> il file PDF appena salvato.</li>
+                <li>Il file PDF si trova nella tua cartella dei download.</li>
+            </ol>
+            <div class="modal-actions">
+                <button class="close-btn" onclick="closeModal()">Annulla</button>
+                <button class="proceed-btn" onclick="proceedWithEmail()">Procedi con l'email</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dettagli email per il modal
+        let emailDetails = {
+            recipient: '',
+            subject: '',
+            body: '',
+            pdfName: ''
+        };
+        
+        // Funzione per formattare la data nel formato europeo (DD.MM.YYYY)
+        function formatDateEU(dateString) {
+            const date = new Date(dateString);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+        
+        // Calcola le ore totali
+        function calcolaOre(input) {
+            const row = input.closest('tr');
+            const oraInizio = row.querySelector('input[name="oraInizio[]"]').value;
+            const oraFine = row.querySelector('input[name="oraFine[]"]').value;
+            
+            if (oraInizio && oraFine) {
+                const start = new Date(`2000-01-01T${oraInizio}`);
+                const end = new Date(`2000-01-01T${oraFine}`);
+                
+                // Se l'ora di fine è minore dell'ora di inizio, aggiungi 24 ore
+                let diff = end - start;
+                if (diff < 0) {
+                    diff += 24 * 60 * 60 * 1000;
+                }
+                
+                // Converti millisecondi in ore
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                // Formatta le ore totali
+                const totalHours = `${hours}.${minutes < 10 ? '0' + minutes : minutes}`;
+                row.querySelector('input[name="oreTotali[]"]').value = totalHours;
+            }
+        }
+        
+        // Calcola il totale complessivo delle ore
+        function calcolaTotaleOre() {
+            const oreTotali = document.querySelectorAll('input[name="oreTotali[]"]');
+            let totale = 0;
+            
+            oreTotali.forEach(campo => {
+                if (campo.value) {
+                    const valore = parseFloat(campo.value.replace(',', '.'));
+                    if (!isNaN(valore)) {
+                        totale += valore;
+                    }
+                }
+            });
+            
+            // Arrotonda a due decimali
+            return Math.round(totale * 100) / 100;
+        }
+        
+        // Aggiungi riga per le ore di lavoro
+        function aggiungiRigaOre() {
+            const tbody = document.querySelector('#timeTable tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" name="Attività[]" required></td>
+                <td><input type="time" name="oraInizio[]" onchange="calcolaOre(this)" required></td>
+                <td><input type="time" name="oraFine[]" onchange="calcolaOre(this)" required></td>
+                <td><input type="text" name="oreTotali[]" readonly></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+        
+        // Aggiungi riga per i materiali
+        function aggiungiRigaMateriali() {
+            const container = document.getElementById('materialsContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'materials-row';
+            newRow.innerHTML = `
+                <input type="text" placeholder="Descrizione materiale" name="materiale[]">
+                <input type="number" placeholder="Quantità" name="quantita[]" min="0">
+                <select name="unita[]">
+                    <option value="pezzi">Pezzi</option>
+                    <option value="metri">Metri</option>
+                </select>
+            `;
+            container.appendChild(newRow);
+        }
+        
+        // Reset del form
+        function resetForm() {
+            if (confirm('Sei sicuro di voler cancellare tutti i dati inseriti?')) {
+                document.getElementById('timesheetForm').reset();
+                
+                // Reset tabella ore di lavoro
+                const tbody = document.querySelector('#timeTable tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td><input type="text" name="Attività[]" required></td>
+                        <td><input type="time" name="oraInizio[]" onchange="calcolaOre(this)" required></td>
+                        <td><input type="time" name="oraFine[]" onchange="calcolaOre(this)" required></td>
+                        <td><input type="text" name="oreTotali[]" readonly></td>
+                    </tr>
+                `;
+                
+                // Reset materiali
+                const materialsContainer = document.getElementById('materialsContainer');
+                materialsContainer.innerHTML = `
+                    <div class="materials-row">
+                        <input type="text" placeholder="Descrizione materiale" name="materiale[]">
+                        <input type="number" placeholder="Quantità" name="quantita[]" min="0">
+                        <select name="unita[]">
+                            <option value="pezzi">Pezzi</option>
+                            <option value="metri">Metri</option>
+                        </select>
+                    </div>
+                `;
+            }
+        }
+        
+        // Genera PDF senza inviare email
+        function generaPDF() {
+            _generaPDF(false);
+        }
+        
+        // Genera PDF e prepara email
+        function generaPDFeInviaEmail() {
+            // Prima genera il PDF
+            _generaPDF(true);
+        }
+        
+        // Funzione per mostrare il modal con le istruzioni per l'email
+        function showEmailModal(pdfName) {
+            const modal = document.getElementById('emailModal');
+            modal.style.display = 'block';
+            
+            // Prepara i dettagli dell'email
+            const collaboratore = document.getElementById('collaboratore').value;
+            const data = document.getElementById('data').value;
+            const dataFormattata = formatDateEU(data);
+            
+            emailDetails = {
+                recipient: 'mainetti.solution@gmail.com',
+                subject: `Bollettino - ${collaboratore} - ${dataFormattata}`,
+                body: `In allegato trovi il bollettino compilato.\n\nNOTA: Per completare l'invio, ricordati di allegare manualmente il file PDF "${pdfName}.pdf" che hai appena salvato.`,
+                pdfName: pdfName
+            };
+        }
+        
+        // Chiudi il modal
+        function closeModal() {
+            const modal = document.getElementById('emailModal');
+            modal.style.display = 'none';
+        }
+        
+        // Procedi con l'apertura del client email
+        function proceedWithEmail() {
+            // Chiudi il modal
+            closeModal();
+            
+            // Apri il client email dell'utente
+            window.location.href = `mailto:${emailDetails.recipient}?subject=${encodeURIComponent(emailDetails.subject)}&body=${encodeURIComponent(emailDetails.body)}`;
+        }
+        
+        // Funzione principale per generare il PDF
+        function _generaPDF(inviaEmail) {
+            const { jsPDF } = window.jspdf;
+            
+            // Verifica i campi obbligatori prima di generare il PDF
+            const collaboratore = document.getElementById('collaboratore').value;
+            const data = document.getElementById('data').value;
+            const cliente = document.getElementById('cliente').value;
+            
+            if (!collaboratore || !data || !cliente) {
+                alert('Compila i campi obbligatori: Nome Collaboratore, Data e Nome Cliente');
+                return;
+            }
+            
+            // Formatta la data nel formato europeo
+            const dataFormattata = formatDateEU(data);
+            
+            // Controlla se è un lavoro a regia
+            const isLavoroRegia = document.getElementById('lavoroRegia').checked;
+            
+            // Prepara un div per il contenuto del PDF
+            const content = document.createElement('div');
+            content.style.width = '100%';
+            content.style.padding = '20px';
+            content.style.boxSizing = 'border-box';
+            
+            // Prepara la lista dei materiali separati da virgola
+            const materialiList = [];
+            const materiali = document.querySelectorAll('input[name="materiale[]"]');
+            const quantita = document.querySelectorAll('input[name="quantita[]"]');
+            const unita = document.querySelectorAll('select[name="unita[]"]');
+            
+            for (let i = 0; i < materiali.length; i++) {
+                if (materiali[i].value) {
+                    let quantitaValue = quantita[i].value || '';
+                    let unitaValue = unita[i].value || '';
+                    if (quantitaValue) {
+                        materialiList.push(`${materiali[i].value} (${quantitaValue} ${unitaValue})`);
+                    } else {
+                        materialiList.push(materiali[i].value);
+                    }
+                }
+            }
+            
+            const materialiString = materialiList.join(', ');
+            
+            // Crea l'intestazione del PDF
+            content.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="color: #e30613; font-family: 'Playfair Display', serif; margin-bottom: 5px;">
+                        <span style="font-size: 1.5em;">M</span>ainetti <span style="font-size: 1.5em;">S</span>olution
+                    </h1>
+                    <p style="margin-top: 0;">Via Cantonale 90, 6705 Cresciano</p>
+                </div>
+                
+                <h2 style="text-align: center; margin-bottom: 20px;">Rapporto di Lavoro ${isLavoroRegia ? '(Regia)' : ''}</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <p><strong>Collaboratore:</strong> ${document.getElementById('collaboratore').value}</p>
+                    <p><strong>Data:</strong> ${dataFormattata}</p>
+                    <p><strong>Cliente:</strong> ${document.getElementById('cliente').value}
